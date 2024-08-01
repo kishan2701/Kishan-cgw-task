@@ -1,5 +1,4 @@
 <apex:page controller="CreateInvoiceController">
-    <h1>Invoice Creation Details</h1>
     <table>
         <tr><th>Parameter</th><th>Value</th></tr>
         <tr><td>origin_record</td><td>{!originRecord}</td></tr>
