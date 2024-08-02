@@ -75,4 +75,30 @@ public class CreateInvoiceController {
                          WHERE Invoice__c = :invoice.Id];
         }
     }
+    // Method to create JSON representation of the invoice and line items
+    public String createInvoiceJson() {
+        Map<String, Object> xeroInvoice = new Map<String, Object>();
+        xeroInvoice.put('Type', 'GCWTASK');
+        xeroInvoice.put('Contact', new Map<String, String>{ 'ContactID' => '0000000' });
+        xeroInvoice.put('Date', invoice.Invoice_Date__c.format());
+        xeroInvoice.put('DueDate', invoice.Due_Date__c.format());
+        List<Map<String, Object>> xeroLineItems = new List<Map<String, Object>>();
+        for (Line_Item__c item : lineItems) {
+            Map<String, Object> lineItem = new Map<String, Object>();
+            lineItem.put('Description', item.Name);
+            lineItem.put('Quantity', item.Quantity__c);
+            lineItem.put('UnitAmount', item.Unit_Price__c);
+            lineItem.put('AccountCode', '200');
+            xeroLineItems.add(lineItem);
+        }
+        xeroInvoice.put('LineItems', xeroLineItems);
+
+        return JSON.serializePretty(xeroInvoice);
+    }
+    // Method to handle Show JSON button click
+    public PageReference showJson() {
+        PageReference jsonPage = Page.ShowJsonPage;
+        jsonPage.getParameters().put('invoiceJson', createInvoiceJson());
+        return jsonPage;
+    }
 }

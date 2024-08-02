@@ -67,4 +67,7 @@
             </apex:repeat>
         </tbody>
     </table>
+    <apex:form>
+        <apex:commandButton value="Show JSON" action="{!showJson}" />
+    </apex:form>
 </apex:page>
