@@ -48,7 +48,7 @@ public class CreateInvoiceController {
                 Account__c = opp.AccountId,
                 Invoice_Date__c = opp.CloseDate,
                 Due_Date__c = opp.Follow_up_Date__c.date(),
-                Invoice_Reference__c = 'Reference-' + opp.Id
+                Invoice_Reference__c = 'Reference-' + opp.Name
             );
             insert invoice;
             lineItems = new List<Line_Item__c>();
