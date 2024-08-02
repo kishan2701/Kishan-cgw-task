@@ -42,7 +42,7 @@ public class CreateInvoiceController {
     }
     
     private void handleOpportunity(Id opportunityId) {
-        Opportunity opp = [SELECT Id, AccountId, CloseDate, Follow_up_Date__c,
+        Opportunity opp = [SELECT Id, AccountId,Account.Name, CloseDate, Follow_up_Date__c,
                            (SELECT Id, Name, Quantity, UnitPrice FROM OpportunityLineItems)
                            FROM Opportunity
                            WHERE Id = :opportunityId
@@ -69,7 +69,7 @@ public class CreateInvoiceController {
         }
 
         // Re-query the invoice to get the updated fields including the roll-up summary field
-        invoice = [SELECT Id, Name, Account__c, Invoice_Date__c, Due_Date__c, Invoice_Reference__c, Total__c
+        invoice = [SELECT Id, Name, Account__c, Account__r.Name, Invoice_Date__c, Due_Date__c, Invoice_Reference__c, Total__c
                    FROM Invoice__c
                    WHERE Id = :invoice.Id];
 
