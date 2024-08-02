@@ -43,7 +43,7 @@ public class CreateInvoiceController {
     
     private void handleOpportunity(Id opportunityId) {
         Opportunity opp = [SELECT Id, AccountId, CloseDate, Follow_up_Date__c,
-                           (SELECT Id,Name, Quantity, UnitPrice FROM OpportunityLineItems)
+                           (SELECT Id, Name, Quantity, UnitPrice FROM OpportunityLineItems)
                            FROM Opportunity
                            WHERE Id = :opportunityId
                            LIMIT 1];
@@ -67,5 +67,15 @@ public class CreateInvoiceController {
         if (!lineItems.isEmpty()) {
             insert lineItems;
         }
+
+        // Re-query the invoice to get the updated fields including the roll-up summary field
+        invoice = [SELECT Id, Name, Account__c, Invoice_Date__c, Due_Date__c, Invoice_Reference__c, Total__c
+                   FROM Invoice__c
+                   WHERE Id = :invoice.Id];
+
+        // Re-query the line items to get the updated formula fields
+        lineItems = [SELECT Id, Name, Quantity__c, Unit_Price__c, Amount__c
+                     FROM Line_Item__c
+                     WHERE Invoice__c = :invoice.Id];
     }
 }
