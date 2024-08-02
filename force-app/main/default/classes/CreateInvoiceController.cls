@@ -38,7 +38,7 @@ public class CreateInvoiceController {
         }
     } 
     private void handleOpportunity(Id opportunityId) {
-        Opportunity opp = [SELECT Id, AccountId, Account.Name, CloseDate, Follow_up_Date__c,
+        Opportunity opp = [SELECT Id, Name, AccountId, Account.Name, CloseDate, Follow_up_Date__c,
                            (SELECT Id, Name, Quantity, UnitPrice FROM OpportunityLineItems)
                            FROM Opportunity
                            WHERE Id = :opportunityId
