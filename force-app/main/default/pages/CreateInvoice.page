@@ -2,7 +2,6 @@
     <h1>Invoice Details</h1>
     
     <!-- Invoice Details Section -->
-    <h2>Invoice Information</h2>
     <table border="1" cellpadding="5" cellspacing="0">
         <thead>
             <tr>
@@ -47,7 +46,7 @@
     </table>
 
     <!-- Line Items Section -->
-    <h2>Line Items</h2>
+    <h2>Order Details</h2>
     <table border="1" cellpadding="5" cellspacing="0">
         <thead>
             <tr>
