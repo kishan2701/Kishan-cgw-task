@@ -1,22 +1,71 @@
 public class CreateInvoiceController {
-    public String originRecord { get; set; }
-    public String account { get; set; }
-    public String invoiceDate { get; set; }
-    public String invoiceDueDate { get; set; }
-    public String childRelationshipName { get; set; }
-    public String lineItemDescription { get; set; }
-    public String lineItemQuantity { get; set; }
-    public String lineItemUnitPrice { get; set; }
+    public Invoice__c invoice { get; set; }
+    public List<Line_Item__c> lineItems { get; set; }
+    private String originRecordId;
+    private String accountField;
+    private String invoiceDateField;
+    private String dueDateField;
+    private String childRelationshipName;
+    private String lineItemDescriptionField;
+    private String lineItemQuantityField;
+    private String lineItemUnitPriceField;
 
     public CreateInvoiceController() {
-        // Extract parameters from the URL
-        originRecord = ApexPages.currentPage().getParameters().get('origin_record');
-        account = ApexPages.currentPage().getParameters().get('account');
-        invoiceDate = ApexPages.currentPage().getParameters().get('invoice_date');
-        invoiceDueDate = ApexPages.currentPage().getParameters().get('invoice_due_date');
+        // Retrieve URL parameters
+        originRecordId = ApexPages.currentPage().getParameters().get('origin_record');
+        accountField = ApexPages.currentPage().getParameters().get('account');
+        invoiceDateField = ApexPages.currentPage().getParameters().get('invoice_date');
+        dueDateField = ApexPages.currentPage().getParameters().get('invoice_due_date');
         childRelationshipName = ApexPages.currentPage().getParameters().get('child_relationship_name');
-        lineItemDescription = ApexPages.currentPage().getParameters().get('line_item_description');
-        lineItemQuantity = ApexPages.currentPage().getParameters().get('line_item_quantity');
-        lineItemUnitPrice = ApexPages.currentPage().getParameters().get('line_item_unit_price');
+        lineItemDescriptionField = ApexPages.currentPage().getParameters().get('line_item_description');
+        lineItemQuantityField = ApexPages.currentPage().getParameters().get('line_item_quantity');
+        lineItemUnitPriceField = ApexPages.currentPage().getParameters().get('line_item_unit_price');
+    }
+    
+    public PageReference processRecord() {
+        if (originRecordId != null) {
+            processRecordById(originRecordId);
+        }
+        return null;
+    }
+    
+    private void processRecordById(Id recordId) {
+        // Determine the object type
+        SObjectType sObjectType = recordId.getSObjectType();
+        String objectType = sObjectType.getDescribe().getName();
+
+        if (objectType == 'Opportunity') {
+            handleOpportunity(recordId);
+        } else if (objectType == 'Order') {
+            // handleOrder(recordId);
+        }
+    }
+    
+    private void handleOpportunity(Id opportunityId) {
+        Opportunity opp = [SELECT Id, AccountId, CloseDate, Follow_up_Date__c,
+                           (SELECT Id,Name, Quantity, UnitPrice FROM OpportunityLineItems)
+                           FROM Opportunity
+                           WHERE Id = :opportunityId
+                           LIMIT 1];
+        invoice = new Invoice__c(
+            Account__c = opp.AccountId,
+            Invoice_Date__c = opp.CloseDate,
+            Due_Date__c = opp.Follow_up_Date__c.date(),
+            Invoice_Reference__c = 'Reference-' + opp.Id
+        );
+        insert invoice;
+
+        lineItems = new List<Line_Item__c>();
+        for (OpportunityLineItem oli : opp.OpportunityLineItems) {
+            lineItems.add(new Line_Item__c(
+                Invoice__c = invoice.Id,
+                Name = (String)oli.get(lineItemDescriptionField),
+                Quantity__c = (Decimal)oli.get(lineItemQuantityField),
+                Unit_Price__c = (Decimal)oli.get(lineItemUnitPriceField)
+            ));
+        }
+        if (!lineItems.isEmpty()) {
+            insert lineItems;
+        }
     }
 }

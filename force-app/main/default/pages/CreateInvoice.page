@@ -1,13 +1,71 @@
-<apex:page controller="CreateInvoiceController">
-    <table>
-        <tr><th>Parameter</th><th>Value</th></tr>
-        <tr><td>origin_record</td><td>{!originRecord}</td></tr>
-        <tr><td>account</td><td>{!account}</td></tr>
-        <tr><td>invoice_date</td><td>{!invoiceDate}</td></tr>
-        <tr><td>invoice_due_date</td><td>{!invoiceDueDate}</td></tr>
-        <tr><td>child_relationship_name</td><td>{!childRelationshipName}</td></tr>
-        <tr><td>line_item_description</td><td>{!lineItemDescription}</td></tr>
-        <tr><td>line_item_quantity</td><td>{!lineItemQuantity}</td></tr>
-        <tr><td>line_item_unit_price</td><td>{!lineItemUnitPrice}</td></tr>
+<apex:page controller="CreateInvoiceController" action="{!processRecord}">
+    <h1>Invoice Details</h1>
+    
+    <!-- Invoice Details Section -->
+    <h2>Invoice Information</h2>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Account</td>
+                <td>{!invoice.Account__c}</td>
+            </tr>
+            <tr>
+                <td>Invoice Number</td>
+                <td>{!invoice.Name}</td>
+            </tr>
+            <tr>
+                <td>Invoice Date</td>
+                <td>
+                    <apex:outputText value="{0, date, dd/MM/yyyy}">
+                        <apex:param value="{!invoice.Invoice_Date__c}" />
+                    </apex:outputText>
+                </td>
+            </tr>
+            <tr>
+                <td>Due Date</td>
+                <td>
+                    <apex:outputText value="{0, date, dd/MM/yyyy}">
+                        <apex:param value="{!invoice.Due_Date__c}" />
+                    </apex:outputText>
+                </td>
+            </tr>
+            <tr>
+                <td>Invoice Reference</td>
+                <td>{!invoice.Invoice_Reference__c}</td>
+            </tr>
+            <tr>
+                <td>Total</td>
+                <td>{!invoice.Total__c}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Line Items Section -->
+    <h2>Line Items</h2>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <apex:repeat value="{!lineItems}" var="item">
+                <tr>
+                    <td>{!item.Name}</td>
+                    <td>{!item.Quantity__c}</td>
+                    <td>{!item.Unit_Price__c}</td>
+                    <td>{!item.Amount__c}</td>
+                </tr>
+            </apex:repeat>
+        </tbody>
     </table>
 </apex:page>
