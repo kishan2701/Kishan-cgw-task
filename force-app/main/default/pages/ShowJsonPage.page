@@ -2,7 +2,7 @@
     <!-- Display JSON Content -->
     <apex:outputText value="{!jsonContent}" escape="false" style="white-space: pre;"/>   
     <apex:form>
-        <apex:commandButton value="Create Records" action="{!createRecords}" />
+        <apex:commandButton value="Create Invoice" action="{!createRecords}" />
         <apex:commandButton value="Discard" action="{!discardRecords}" />
     </apex:form>
 </apex:page>
