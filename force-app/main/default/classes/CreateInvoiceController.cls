@@ -19,62 +19,60 @@ public class CreateInvoiceController {
         lineItemDescriptionField = ApexPages.currentPage().getParameters().get('line_item_description');
         lineItemQuantityField = ApexPages.currentPage().getParameters().get('line_item_quantity');
         lineItemUnitPriceField = ApexPages.currentPage().getParameters().get('line_item_unit_price');
-    }  
+    }
     public PageReference processRecord() {
         if (originRecordId != null && !String.isEmpty(originRecordId)) {
             processRecordById(originRecordId);
         }
         return null;
-    }  
-    private void processRecordById(Id recordId) {
-        // Determine the object type
-        SObjectType sObjectType = recordId.getSObjectType();
-        String objectType = sObjectType.getDescribe().getName();
-
-        if (objectType == 'Opportunity') {
-            handleOpportunity(recordId);
-        } else if (objectType == 'Order') {
-            // handleOrder(recordId);
-        }
-    } 
-    private void handleOpportunity(Id opportunityId) {
-        Opportunity opp = [SELECT Id, Name, AccountId, Account.Name, CloseDate, Follow_up_Date__c,
-                           (SELECT Id, Name, Quantity, UnitPrice FROM OpportunityLineItems)
-                           FROM Opportunity
-                           WHERE Id = :opportunityId
-                           LIMIT 1];
-        if (opp != null && opp.AccountId != null && opp.CloseDate != null && opp.Follow_up_Date__c != null) {
-            invoice = new Invoice__c(
-                Account__c = opp.AccountId,
-                Invoice_Date__c = opp.CloseDate,
-                Due_Date__c = opp.Follow_up_Date__c.date(),
-                Invoice_Reference__c = 'Reference-' + opp.Name
-            );
-            insert invoice;
-            lineItems = new List<Line_Item__c>();
-            for (OpportunityLineItem oli : opp.OpportunityLineItems) {
-                if (oli != null && oli.get(lineItemDescriptionField) != null && oli.get(lineItemQuantityField) != null && oli.get(lineItemUnitPriceField) != null) {
-                    lineItems.add(new Line_Item__c(
-                        Invoice__c = invoice.Id,
-                        Name = (String)oli.get(lineItemDescriptionField),
-                        Quantity__c = (Decimal)oli.get(lineItemQuantityField),
-                        Unit_Price__c = (Decimal)oli.get(lineItemUnitPriceField)
-                    ));
-                }
-            }
-            if (!lineItems.isEmpty()) {
-                insert lineItems;
-            }
-            // Re-query the invoice to get the updated Total Field value
-            invoice = [SELECT Id, Name, Account__c, Account__r.Name, Invoice_Date__c, Due_Date__c, Invoice_Reference__c, Total__c
-                       FROM Invoice__c
-                       WHERE Id = :invoice.Id];
-            // Re-query the line items to get the updated Amount Field value
-            lineItems = [SELECT Id, Name, Quantity__c, Unit_Price__c, Amount__c
-                         FROM Line_Item__c
-                         WHERE Invoice__c = :invoice.Id];
-        }
     }
+    private void processRecordById(Id recordId) {
+        String sObjectType = recordId.getSObjectType().getDescribe().getName();
+        String query;
+        if (sObjectType == 'Opportunity') {
+            query = 'SELECT Id, Name, ' +
+                    accountField + ', ' +
+                    invoiceDateField + ', ' +
+                    dueDateField + ', ' +
+                    '(SELECT Id, ' +
+                    lineItemDescriptionField + ', ' +
+                    lineItemQuantityField + ', ' +
+                    lineItemUnitPriceField + ' FROM ' + childRelationshipName + ') ' +
+                    'FROM Opportunity WHERE Id = :recordId LIMIT 1';
+            Opportunity opp = (Opportunity)Database.query(query);
+            if (opp != null && opp.get(accountField) != null && opp.get(invoiceDateField) != null && opp.get(dueDateField) != null) {
+                Date dueDate = (opp.get(dueDateField) instanceof Datetime) ? ((Datetime)opp.get(dueDateField)).date() : (Date)opp.get(dueDateField);
+                invoice = new Invoice__c(
+                    Account__c = (Id)opp.get(accountField),
+                    Invoice_Date__c = (Date)opp.get(invoiceDateField),
+                    Due_Date__c = dueDate,
+                    Invoice_Reference__c = 'Reference-' + opp.Name
+                );
+                insert invoice;
+                lineItems = new List<Line_Item__c>();
+                for (OpportunityLineItem oli : opp.OpportunityLineItems) {
+                    if (oli != null && oli.get(lineItemDescriptionField) != null && oli.get(lineItemQuantityField) != null && oli.get(lineItemUnitPriceField) != null) {
+                        lineItems.add(new Line_Item__c(
+                            Invoice__c = invoice.Id,
+                            Name = (String)oli.get(lineItemDescriptionField),
+                            Quantity__c = (Decimal)oli.get(lineItemQuantityField),
+                            Unit_Price__c = (Decimal)oli.get(lineItemUnitPriceField)
+                        ));
+                    }
+                }
+                if (!lineItems.isEmpty()) {
+                    insert lineItems;
+                }
+            // Re-query the invoice to get the updated Total Field value
+                invoice = [SELECT Id, Name, Account__c, Account__r.Name, Invoice_Date__c, Due_Date__c, Invoice_Reference__c, Total__c
+                           FROM Invoice__c
+                           WHERE Id = :invoice.Id];
+            // Re-query the line items to get the updated Amount Field value
+                lineItems = [SELECT Id, Name, Quantity__c, Unit_Price__c, Amount__c
+                             FROM Line_Item__c
+                             WHERE Invoice__c = :invoice.Id];
+            }
+        }
     // Method to create JSON representation of the invoice and line items
     public String createInvoiceJson() {
         Map<String, Object> xeroInvoice = new Map<String, Object>();
