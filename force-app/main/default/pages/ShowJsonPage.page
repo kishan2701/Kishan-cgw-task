@@ -1,3 +1,8 @@
-<apex:page>
-    <apex:outputText value="{!$CurrentPage.parameters.invoiceJson}" escape="false"/>
+<apex:page controller="CreateInvoiceController">
+    <!-- Display JSON Content -->
+    <apex:outputText value="{!jsonContent}" escape="false" style="white-space: pre;"/>   
+    <apex:form>
+        <apex:commandButton value="Create Records" action="{!createRecords}" />
+        <apex:commandButton value="Discard" action="{!discardRecords}" />
+    </apex:form>
 </apex:page>

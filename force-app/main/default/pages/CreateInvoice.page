@@ -1,6 +1,5 @@
 <apex:page controller="CreateInvoiceController" action="{!processRecord}">
-    <h1>Invoice Details</h1>
-    
+    <h1>Invoice Details</h1>    
     <!-- Invoice Details Section -->
     <table border="1" cellpadding="5" cellspacing="0">
         <thead>
@@ -44,7 +43,6 @@
             </tr>
         </tbody>
     </table>
-
     <!-- Line Items Section -->
     <h2>Order Details</h2>
     <table border="1" cellpadding="5" cellspacing="0">
@@ -67,6 +65,7 @@
             </apex:repeat>
         </tbody>
     </table>
+    <!-- Show JSON Section -->
     <apex:form>
         <apex:commandButton value="Show JSON" action="{!showJson}" />
     </apex:form>

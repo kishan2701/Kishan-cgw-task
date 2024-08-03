@@ -1,6 +1,7 @@
 public class CreateInvoiceController {
     public Invoice__c invoice { get; set; }
     public List<Line_Item__c> lineItems { get; set; }
+    public String jsonContent { get; set; }
     private String originRecordId;
     private String accountField;
     private String invoiceDateField;
@@ -73,6 +74,7 @@ public class CreateInvoiceController {
                              WHERE Invoice__c = :invoice.Id];
             }
         }
+    }
     // Method to create JSON representation of the invoice and line items
     public String createInvoiceJson() {
         Map<String, Object> xeroInvoice = new Map<String, Object>();
@@ -95,13 +97,29 @@ public class CreateInvoiceController {
             xeroLineItems.add(lineItem);
         }
         xeroInvoice.put('LineItems', xeroLineItems);
-
         return JSON.serializePretty(xeroInvoice);
     }
     // Method to handle Show JSON button click
     public PageReference showJson() {
+        jsonContent = createInvoiceJson();
         PageReference jsonPage = Page.ShowJsonPage;
-        jsonPage.getParameters().put('invoiceJson', createInvoiceJson());
+        jsonPage.getParameters().put('invoiceId', invoice.Id);
         return jsonPage;
+    }
+    public PageReference createRecords() {
+        return new PageReference('/' + invoice.Id);
+    }
+    public PageReference discardRecords() {
+        try {
+            if (invoice != null) {
+                delete invoice;
+            }
+            if (!lineItems.isEmpty()) {
+                delete lineItems;
+            }
+        } catch (DmlException e) {
+            ApexPages.addMessages(e);
+        }
+        return new PageReference('/' + originRecordId);
     }
 }
