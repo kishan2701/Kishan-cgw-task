@@ -19,8 +19,8 @@
     <url>/apex/CreateInvoice
 ?origin_record={!Opportunity.Id}
 &amp;account=AccountId
-&amp;invoice_due_date=CloseDate
-&amp;due_date=Follow_up_Date__c
+&amp;invoice_date=CloseDate
+&amp;invoice_due_date=Follow_up_Date__c
 &amp;child_relationship_name=OpportunityLineItems
 &amp;line_item_description=Name
 &amp;line_item_quantity=Quantity
