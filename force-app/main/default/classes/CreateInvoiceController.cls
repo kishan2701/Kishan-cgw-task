@@ -78,16 +78,21 @@ public class CreateInvoiceController {
     // Method to create JSON representation of the invoice and line items
     public String createInvoiceJson() {
         Map<String, Object> xeroInvoice = new Map<String, Object>();
-        xeroInvoice.put('Type', 'GCWTASK');
+        xeroInvoice.put('Type', 'ACCREC'); //value for sales invoice as per XERO doc
         xeroInvoice.put('Contact', new Map<String, String>{ 'ContactID' => '0000000' });
         xeroInvoice.put('Date', invoice.Invoice_Date__c.format());
         xeroInvoice.put('DueDate', invoice.Due_Date__c.format());
+        xeroInvoice.put('Status', 'DRAFT');
+        xeroInvoice.put('CurrencyCode', UserInfo.getDefaultCurrency());
+        xeroInvoice.put('InvoiceNumber', invoice.Name);
+        xeroInvoice.put('Reference', invoice.Invoice_Reference__c);
         List<Map<String, Object>> xeroLineItems = new List<Map<String, Object>>();
         for (Line_Item__c item : lineItems) {
             Map<String, Object> lineItem = new Map<String, Object>();
             lineItem.put('Description', item.Name);
             lineItem.put('Quantity', item.Quantity__c);
             lineItem.put('UnitAmount', item.Unit_Price__c);
+            lineItem.put('LineAmount', item.Amount__c);
             lineItem.put('AccountCode', '200');
             xeroLineItems.add(lineItem);
         }
